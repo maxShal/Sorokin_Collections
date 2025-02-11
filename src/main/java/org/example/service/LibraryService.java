@@ -11,9 +11,9 @@ public class LibraryService {
 
     private Map<Long,Book> books;
 
-    private Map<Integer, List<Integer>> borrowedBooks;
+    private Map<Long, List<Long>> borrowedBooks;
 
-    private Map<Integer, List<Integer>> unborrowedBooks;
+    private Map<Long, List<Long>> unborrowedBooks;
 
     public LibraryService(List<User> users, List<Book> books) {
         this.users = new HashMap<>();
@@ -21,12 +21,17 @@ public class LibraryService {
         this.borrowedBooks = new HashMap<>();
         this.unborrowedBooks = new HashMap<>();
 
-        users.forEach(user -> this.users.put(user.getUserId(), user));
-        books.forEach(book -> {
+
+        for (User user : users) {
+            this.users.put(user.getUserId(), user);
+        }
+
+        for (Book book : books) {
             this.books.put(book.getBookId(), book);
-            this.unborrowedBooks.put(book.getBookId().intValue(), Collections.emptyList());
-        });
+            this.unborrowedBooks.put( book.getBookId(), new ArrayList<>());
+        }
     }
+
     public List<Book> getAllBooks()
     {
         return new ArrayList<>(books.values());
@@ -34,7 +39,7 @@ public class LibraryService {
 
     public List<Book> getAllAvailableBooks() {
         List<Book> result = new ArrayList<>();
-        for (Integer bookId : unborrowedBooks.keySet()) {
+        for (Long bookId : unborrowedBooks.keySet()) {
             if (books.containsKey(bookId)) {
                 result.add(books.get(bookId));
             }
@@ -44,9 +49,9 @@ public class LibraryService {
 
     public List<Book> getUserBooks(Long userId) {
         List<Book> result = new ArrayList<>();
-        List<Integer> borrowedBooksId = borrowedBooks.getOrDefault(userId.intValue(), Collections.emptyList());
+        List<Long> borrowedBooksId = borrowedBooks.getOrDefault(userId, Collections.emptyList());
 
-        for (Integer bookId : borrowedBooksId) {
+        for (Long bookId : borrowedBooksId) {
             if (books.containsKey(bookId)) {
                 result.add(books.get(bookId));
             }
@@ -56,14 +61,12 @@ public class LibraryService {
 
 
     public boolean takeBook(Long userId, Long bookId) {
-        Integer bookKey = bookId.intValue();
-        Integer userKey = userId.intValue();
 
-        if (unborrowedBooks.containsKey(bookKey)) {
-            unborrowedBooks.remove(bookKey);
+        if (unborrowedBooks.containsKey(bookId)) {
+            unborrowedBooks.remove(bookId);
 
-            borrowedBooks.putIfAbsent(userKey, new ArrayList<>());
-            borrowedBooks.get(userKey).add(bookKey);
+            borrowedBooks.putIfAbsent(userId, new ArrayList<>());
+            borrowedBooks.get(userId).add(bookId);
 
             return true;
         }
@@ -72,17 +75,15 @@ public class LibraryService {
     }
 
     public boolean returnBook(Long userId, Long bookId) {
-        Integer bookKey = bookId.intValue();
-        Integer userKey = userId.intValue();
 
-        if (borrowedBooks.containsKey(userKey) && borrowedBooks.get(userKey).contains(bookKey)) {
-            borrowedBooks.get(userKey).remove(bookKey);
+        if (borrowedBooks.containsKey(userId) && borrowedBooks.get(userId).contains(bookId)) {
+            borrowedBooks.get(userId).remove(bookId);
 
-            if (borrowedBooks.get(userKey).isEmpty()) {
-                borrowedBooks.remove(userKey);
+            if (borrowedBooks.get(userId).isEmpty()) {
+                borrowedBooks.remove(userId);
             }
 
-            unborrowedBooks.putIfAbsent(bookKey, new ArrayList<>());
+            unborrowedBooks.putIfAbsent(bookId, new ArrayList<>());
             return true;
         }
         return false;

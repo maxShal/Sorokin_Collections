@@ -2,14 +2,12 @@ package org.example.service;
 
 import org.example.model.Book;
 import org.example.model.User;
-import org.example.service.LibraryService;
-import org.junit.Test;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 
 import java.util.Arrays;
 import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 public class LibraryServiceTest {
